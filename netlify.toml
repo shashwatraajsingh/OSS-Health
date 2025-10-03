@@ -1,6 +1,6 @@
 [build]
-  # Build command for the React app
-  command = "cd client && npm run build"
+  # Build command for the React app - install deps first
+  command = "cd client && npm install && npm run build"
   # Directory to publish (React build output)
   publish = "client/build"
 
@@ -8,16 +8,15 @@
   # Node version
   NODE_VERSION = "18"
 
-# Redirect all routes to index.html for React Router
+# API proxy rules - Forward API calls to Render backend
+[[redirects]]
+  from = "/api/*"
+  to = "https://oss-health-bgrn.onrender.com/api/:splat"
+  status = 200
+  force = true
+
+# Redirect all routes to index.html for React Router (must be last)
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-
-# API proxy rules - Update with your Render backend URL
-# Replace 'your-app-name' with your actual Render service name
-[[redirects]]
-  from = "/api/*"
-  to = "https://your-app-name.onrender.com/api/:splat"
-  status = 200
-  force = true
