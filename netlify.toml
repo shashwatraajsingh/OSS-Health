@@ -14,10 +14,10 @@
   to = "/index.html"
   status = 200
 
-# API proxy rules (if you want to proxy API calls)
-# Uncomment and modify these if you deploy your backend to a service like Railway, Render, or Heroku
-# [[redirects]]
-#   from = "/api/*"
-#   to = "https://your-backend-url.com/api/:splat"
-#   status = 200
-#   force = true
+# API proxy rules - Update with your Render backend URL
+# Replace 'your-app-name' with your actual Render service name
+[[redirects]]
+  from = "/api/*"
+  to = "https://your-app-name.onrender.com/api/:splat"
+  status = 200
+  force = true

@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: oss-health-backend
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        generateValue: true
+      # Add your GitHub token in Render dashboard
+      # - key: GITHUB_TOKEN
+      #   sync: false
