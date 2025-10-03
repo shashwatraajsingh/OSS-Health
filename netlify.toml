@@ -11,12 +11,12 @@
 # API proxy rules - Forward API calls to Render backend
 [[redirects]]
   from = "/api/*"
-  to = "https://oss-health-bgrn.onrender.com/"
+  to = "https://oss-health-bgrn.onrender.com/api/:splat"
   status = 200
   force = true
 
 # Redirect all routes to index.html for React Router (must be last)
 [[redirects]]
   from = "/*"
-  to = "/index.html"
+  to = "/index.html"    
   status = 200
