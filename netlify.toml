@@ -11,7 +11,7 @@
 # API proxy rules - Forward API calls to Render backend
 [[redirects]]
   from = "/api/*"
-  to = "https://oss-health-bgrn.onrender.com/api/:splat"
+  to = "https://oss-health-bgrn.onrender.com/"
   status = 200
   force = true
 
