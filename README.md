@@ -13,6 +13,7 @@ A comprehensive web application for evaluating open-source project health metric
 - **📋 Trending Repositories**: Discover popular projects to analyze
 - **💾 Export Functionality**: Download reports in JSON/CSV format
 - **🎨 Modern UI**: Responsive design with Tailwind CSS
+- **👥 Complete Contributor Analysis**: Fetches ALL contributors (up to 10,000) for accurate metrics
 
 ## Metrics Evaluated
 

@@ -10,6 +10,9 @@ class GitHubService {
     
     if (process.env.GITHUB_TOKEN) {
       this.headers['Authorization'] = `token ${process.env.GITHUB_TOKEN}`;
+      console.log(`✅ GitHub Service initialized with authentication`);
+    } else {
+      console.warn('⚠️ GitHub Service initialized without authentication - rate limits will apply');
     }
   }
 
@@ -21,7 +24,26 @@ class GitHubService {
       });
       return response.data;
     } catch (error) {
-      console.error(`GitHub API error for ${endpoint}:`, error.message);
+      if (error.response) {
+        const status = error.response.status;
+        const message = error.response.data?.message || error.message;
+        
+        if (status === 403) {
+          console.error(`🚫 GitHub API 403 Forbidden for ${endpoint}:`);
+          console.error(`   Message: ${message}`);
+          if (message.includes('rate limit')) {
+            console.error('   💡 Rate limit exceeded. Consider adding a GitHub token.');
+          } else if (message.includes('private') || message.includes('access')) {
+            console.error('   💡 Repository may be private or token lacks permissions.');
+          }
+        } else if (status === 404) {
+          console.error(`❌ GitHub API 404 Not Found for ${endpoint}: Repository or resource not found`);
+        } else {
+          console.error(`GitHub API error ${status} for ${endpoint}: ${message}`);
+        }
+      } else {
+        console.error(`GitHub API error for ${endpoint}:`, error.message);
+      }
       throw error;
     }
   }
@@ -30,31 +52,52 @@ class GitHubService {
     return await this.makeRequest(`/repos/${owner}/${repo}`);
   }
 
-  async getContributors(owner, repo, maxPages = 3) {
+  async getContributors(owner, repo) {
     let allContributors = [];
     let page = 1;
     const perPage = 100;
     
     try {
-      while (page <= maxPages) {
+      console.log(`Fetching ALL contributors for ${owner}/${repo}...`);
+      
+      while (true) {
+        console.log(`Fetching contributors page ${page}...`);
+        
         const contributors = await this.makeRequest(
           `/repos/${owner}/${repo}/contributors?page=${page}&per_page=${perPage}&anon=true`
         );
         
         if (!contributors || contributors.length === 0) {
+          console.log(`No more contributors found. Total pages fetched: ${page - 1}`);
           break;
         }
         
         allContributors = allContributors.concat(contributors);
+        console.log(`Page ${page}: Found ${contributors.length} contributors. Total so far: ${allContributors.length}`);
         
         // If we got less than perPage results, we've reached the end
         if (contributors.length < perPage) {
+          console.log(`Reached end of contributors. Final count: ${allContributors.length}`);
           break;
         }
         
         page++;
+        
+        // Safety check: If we've fetched more than 100 pages (10,000 contributors), 
+        // that's likely enough for analysis purposes
+        if (page > 100) {
+          console.log(`⚠️ Reached safety limit of 100 pages (${allContributors.length} contributors). Stopping fetch.`);
+          break;
+        }
+        
+        // Add a small delay to avoid rate limiting
+        if (page % 10 === 0) {
+          console.log(`⏸️ Pausing briefly after ${page - 1} pages to avoid rate limiting...`);
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
       }
       
+      console.log(`✅ Successfully fetched ${allContributors.length} total contributors for ${owner}/${repo}`);
       return allContributors;
     } catch (error) {
       console.error(`Error fetching contributors for ${owner}/${repo}:`, error.message);
@@ -157,9 +200,19 @@ class GitHubService {
 
   async getContributorStats(owner, repo) {
     try {
+      console.log(`Fetching contributor statistics for ${owner}/${repo}...`);
+      
       // This endpoint provides more detailed contributor statistics
+      // Note: This endpoint can be slow for large repos and may return 202 (processing)
       const stats = await this.makeRequest(`/repos/${owner}/${repo}/stats/contributors`);
-      return stats || [];
+      
+      if (stats && Array.isArray(stats)) {
+        console.log(`✅ Successfully fetched detailed stats for ${stats.length} contributors`);
+        return stats;
+      } else {
+        console.log(`⚠️ Contributor stats not available or still processing for ${owner}/${repo}`);
+        return [];
+      }
     } catch (error) {
       console.error(`Error fetching contributor stats for ${owner}/${repo}:`, error.message);
       return [];

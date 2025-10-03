@@ -14,13 +14,24 @@ export const analyzeRepository = async (owner, repo) => {
   } catch (error) {
     if (error.response) {
       // Server responded with error status
-      throw new Error(error.response.data.error || 'Analysis failed');
+      const errorData = error.response.data;
+      const status = error.response.status;
+      
+      if (status === 403) {
+        throw new Error(errorData.message || 'Repository access denied. This repository may be private or your GitHub token lacks permissions.');
+      } else if (status === 404) {
+        throw new Error(errorData.message || 'Repository not found. Please check the repository URL.');
+      } else if (status === 429) {
+        throw new Error('Rate limit exceeded. Please try again later or add a GitHub token for higher limits.');
+      } else {
+        throw new Error(errorData.message || errorData.error || 'Analysis failed');
+      }
     } else if (error.request) {
       // Request was made but no response received
-      throw new Error('Unable to connect to analysis service');
+      throw new Error('Unable to connect to analysis service. Please check your internet connection.');
     } else {
       // Something else happened
-      throw new Error('An unexpected error occurred');
+      throw new Error('An unexpected error occurred during analysis.');
     }
   }
 };

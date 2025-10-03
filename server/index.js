@@ -1,12 +1,38 @@
+// Load environment variables FIRST before requiring any services
+const dotenv = require('dotenv');
+const path = require('path');
+const fs = require('fs');
+
+// Check for .env file in multiple locations
+const envPaths = [
+  path.join(__dirname, '.env'),           // server/.env
+  path.join(__dirname, '../.env'),        // root/.env
+  './.env',                               // current directory
+  './server/.env'                         // server directory from root
+];
+
+let envLoaded = false;
+for (const envPath of envPaths) {
+  if (fs.existsSync(envPath)) {
+    console.log(`📁 Loading environment from: ${envPath}`);
+    dotenv.config({ path: envPath });
+    envLoaded = true;
+    break;
+  }
+}
+
+if (!envLoaded) {
+  console.warn('⚠️ No .env file found in any expected location');
+  dotenv.config(); // Try default behavior
+}
+
+// Now require services AFTER environment is loaded
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
 const NodeCache = require('node-cache');
 const githubService = require('./services/githubService');
 const packageService = require('./services/packageService');
 const metricsCalculator = require('./utils/metricsCalculator');
-
-dotenv.config({ path: './server/.env' });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -31,10 +57,11 @@ app.get('/api/analyze/:owner/:repo', async (req, res) => {
     // Check cache first
     const cachedResult = cache.get(cacheKey);
     if (cachedResult) {
+      console.log(`📋 Serving cached result for ${owner}/${repo}`);
       return res.json(cachedResult);
     }
 
-    console.log(`Analyzing repository: ${owner}/${repo}`);
+    console.log(`🔍 Analyzing repository: ${owner}/${repo} (fetching ALL contributors)`);
 
     // Fetch data from multiple sources
     const [
@@ -70,7 +97,17 @@ app.get('/api/analyze/:owner/:repo', async (req, res) => {
     };
 
     if (!results.repository) {
-      return res.status(404).json({ error: 'Repository not found' });
+      // Check if we got 403 errors (private repo or permission issues)
+      if (repoData.status === 'rejected' && repoData.reason?.response?.status === 403) {
+        return res.status(403).json({ 
+          error: 'Repository access denied',
+          message: 'This repository is private or your GitHub token lacks the necessary permissions. Please ensure your token has access to this repository.'
+        });
+      }
+      return res.status(404).json({ 
+        error: 'Repository not found',
+        message: 'The specified repository does not exist or is not accessible.'
+      });
     }
 
     // Calculate comprehensive metrics
@@ -113,5 +150,8 @@ app.listen(PORT, () => {
   if (!process.env.GITHUB_TOKEN) {
     console.warn('⚠️  Warning: GITHUB_TOKEN not set. API rate limits will be severely restricted.');
     console.log('   Get a token at: https://github.com/settings/tokens');
+  } else {
+    console.log(`✅ GitHub token loaded: ${process.env.GITHUB_TOKEN.substring(0, 8)}...`);
+    console.log('🔑 Enhanced API access enabled with higher rate limits');
   }
 });

@@ -10,7 +10,10 @@ const LoadingSpinner = () => {
       <div className="mt-4 text-center">
         <h3 className="text-lg font-medium text-gray-900">Analyzing Repository</h3>
         <p className="text-gray-600 mt-1">
-          Fetching data from GitHub, npm, and PyPI...
+          Fetching comprehensive data from GitHub, npm, and PyPI...
+        </p>
+        <p className="text-sm text-gray-500 mt-2">
+          For large repositories, this may take a moment to fetch all contributors
         </p>
       </div>
       
