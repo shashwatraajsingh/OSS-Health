@@ -6,7 +6,7 @@ const githubService = require('./services/githubService');
 const packageService = require('./services/packageService');
 const metricsCalculator = require('./utils/metricsCalculator');
 
-dotenv.config();
+dotenv.config({ path: './server/.env' });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
