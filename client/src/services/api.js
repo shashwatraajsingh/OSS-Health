@@ -2,12 +2,20 @@ import axios from 'axios';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
+// Check if API URL is configured for production
+const isApiConfigured = API_BASE_URL && API_BASE_URL !== 'https://your-backend-url.com/api';
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000, // 30 seconds timeout for analysis
 });
 
 export const analyzeRepository = async (owner, repo) => {
+  // Check if API is configured
+  if (!isApiConfigured) {
+    throw new Error('Backend service is not configured. This is a demo deployment - the full functionality requires a backend server.');
+  }
+
   try {
     const response = await api.get(`/analyze/${owner}/${repo}`);
     return response.data;
@@ -28,7 +36,7 @@ export const analyzeRepository = async (owner, repo) => {
       }
     } else if (error.request) {
       // Request was made but no response received
-      throw new Error('Unable to connect to analysis service. Please check your internet connection.');
+      throw new Error('Backend service is unavailable. Please try again later or check if the backend is running.');
     } else {
       // Something else happened
       throw new Error('An unexpected error occurred during analysis.');
@@ -37,6 +45,36 @@ export const analyzeRepository = async (owner, repo) => {
 };
 
 export const getTrendingRepositories = async () => {
+  // Return mock data if API is not configured
+  if (!isApiConfigured) {
+    return [
+      {
+        name: 'react',
+        full_name: 'facebook/react',
+        html_url: 'https://github.com/facebook/react',
+        description: 'The library for web and native user interfaces',
+        stargazers_count: 220000,
+        language: 'JavaScript'
+      },
+      {
+        name: 'vue',
+        full_name: 'vuejs/vue',
+        html_url: 'https://github.com/vuejs/vue',
+        description: 'Vue.js is a progressive, incrementally-adoptable JavaScript framework',
+        stargazers_count: 207000,
+        language: 'TypeScript'
+      },
+      {
+        name: 'angular',
+        full_name: 'angular/angular',
+        html_url: 'https://github.com/angular/angular',
+        description: 'The modern web developer\'s platform',
+        stargazers_count: 93000,
+        language: 'TypeScript'
+      }
+    ];
+  }
+
   try {
     const response = await api.get('/trending');
     return response.data;

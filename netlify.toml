@@ -1,0 +1,23 @@
+[build]
+  # Build command for the React app
+  command = "cd client && npm run build"
+  # Directory to publish (React build output)
+  publish = "client/build"
+
+[build.environment]
+  # Node version
+  NODE_VERSION = "18"
+
+# Redirect all routes to index.html for React Router
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# API proxy rules (if you want to proxy API calls)
+# Uncomment and modify these if you deploy your backend to a service like Railway, Render, or Heroku
+# [[redirects]]
+#   from = "/api/*"
+#   to = "https://your-backend-url.com/api/:splat"
+#   status = 200
+#   force = true
