@@ -83,12 +83,49 @@ const HealthInsights = ({ metrics, repository }) => {
         message: 'Single contributor - project may be at risk if maintainer becomes unavailable',
         icon: AlertTriangle
       });
-    } else if (metrics.community.metrics.externalContributors > 10) {
+    } else if (metrics.community.metrics.contributorDiversity > 0.7) {
       insights.push({
         type: 'success',
         category: 'Community',
-        message: 'Strong external contributor base indicates healthy community',
+        message: `Excellent contributor diversity (${(metrics.community.metrics.contributorDiversity * 100).toFixed(1)}% external contributors)`,
         icon: CheckCircle
+      });
+    } else if (metrics.community.metrics.contributorDiversity < 0.3) {
+      insights.push({
+        type: 'info',
+        category: 'Community',
+        message: 'Low contributor diversity - consider encouraging external contributions',
+        icon: Info
+      });
+    }
+
+    // Active contributor insights
+    if (metrics.community.metrics.activeContributors !== undefined) {
+      const activityRatio = metrics.community.metrics.activityRatio || 0;
+      if (activityRatio < 0.2) {
+        insights.push({
+          type: 'warning',
+          category: 'Community',
+          message: 'Low recent contributor activity - community engagement may be declining',
+          icon: TrendingDown
+        });
+      } else if (activityRatio > 0.5) {
+        insights.push({
+          type: 'success',
+          category: 'Community',
+          message: 'High contributor activity - strong community engagement',
+          icon: TrendingUp
+        });
+      }
+    }
+
+    // Core contributor insights
+    if (metrics.community.metrics.coreContributors === 0 && metrics.community.metrics.totalContributors > 1) {
+      insights.push({
+        type: 'info',
+        category: 'Community',
+        message: 'No core contributors identified - consider recognizing regular contributors',
+        icon: Info
       });
     }
 

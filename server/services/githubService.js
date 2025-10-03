@@ -30,11 +30,36 @@ class GitHubService {
     return await this.makeRequest(`/repos/${owner}/${repo}`);
   }
 
-  async getContributors(owner, repo, page = 1, perPage = 100) {
-    const contributors = await this.makeRequest(
-      `/repos/${owner}/${repo}/contributors?page=${page}&per_page=${perPage}`
-    );
-    return contributors;
+  async getContributors(owner, repo, maxPages = 3) {
+    let allContributors = [];
+    let page = 1;
+    const perPage = 100;
+    
+    try {
+      while (page <= maxPages) {
+        const contributors = await this.makeRequest(
+          `/repos/${owner}/${repo}/contributors?page=${page}&per_page=${perPage}&anon=true`
+        );
+        
+        if (!contributors || contributors.length === 0) {
+          break;
+        }
+        
+        allContributors = allContributors.concat(contributors);
+        
+        // If we got less than perPage results, we've reached the end
+        if (contributors.length < perPage) {
+          break;
+        }
+        
+        page++;
+      }
+      
+      return allContributors;
+    } catch (error) {
+      console.error(`Error fetching contributors for ${owner}/${repo}:`, error.message);
+      return [];
+    }
   }
 
   async getIssues(owner, repo, state = 'all', page = 1, perPage = 100) {
@@ -127,6 +152,17 @@ class GitHubService {
     } catch (error) {
       console.error(`Error fetching languages for ${owner}/${repo}:`, error.message);
       return {};
+    }
+  }
+
+  async getContributorStats(owner, repo) {
+    try {
+      // This endpoint provides more detailed contributor statistics
+      const stats = await this.makeRequest(`/repos/${owner}/${repo}/stats/contributors`);
+      return stats || [];
+    } catch (error) {
+      console.error(`Error fetching contributor stats for ${owner}/${repo}:`, error.message);
+      return [];
     }
   }
 }

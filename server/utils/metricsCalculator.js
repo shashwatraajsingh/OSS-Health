@@ -1,13 +1,13 @@
 class MetricsCalculator {
   calculateAllMetrics(data) {
-    const { repository, contributors, issues, pullRequests, releases, security, packageInfo } = data;
+    const { repository, contributors, contributorStats, issues, pullRequests, releases, security, packageInfo } = data;
     
     const metrics = {
       popularity: this.calculatePopularityScore(repository, packageInfo),
       activity: this.calculateActivityScore(repository, issues, pullRequests, releases),
       maintenance: this.calculateMaintenanceScore(issues, pullRequests, repository),
       security: this.calculateSecurityScore(security, repository),
-      community: this.calculateCommunityScore(contributors, issues, pullRequests, repository)
+      community: this.calculateCommunityScore(contributors, contributorStats, issues, pullRequests, repository)
     };
 
     // Calculate overall score
@@ -193,35 +193,85 @@ class MetricsCalculator {
     };
   }
 
-  calculateCommunityScore(contributors, issues, pullRequests, repo) {
-    const uniqueContributors = contributors.length;
-    const coreContributors = contributors.filter(c => c.contributions >= 10).length;
+  calculateCommunityScore(contributors, contributorStats, issues, pullRequests, repo) {
+    // Use contributor stats for more accurate data if available
+    const statsAvailable = contributorStats && contributorStats.length > 0;
+    
+    let totalContributors, coreContributors, externalContributors;
+    let totalCommits = 0;
+    let activeContributors = 0; // Contributors with activity in last 6 months
+    
+    if (statsAvailable) {
+      // Use the more detailed stats
+      totalContributors = contributorStats.length;
+      
+      // Calculate metrics from contributor stats
+      const sixMonthsAgo = new Date();
+      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+      
+      contributorStats.forEach(contributor => {
+        if (contributor.total >= 10) {
+          coreContributors = (coreContributors || 0) + 1;
+        }
+        
+        totalCommits += contributor.total || 0;
+        
+        // Check for recent activity
+        if (contributor.weeks && contributor.weeks.length > 0) {
+          const recentActivity = contributor.weeks.some(week => {
+            const weekDate = new Date(week.w * 1000);
+            return weekDate > sixMonthsAgo && (week.c > 0 || week.a > 0 || week.d > 0);
+          });
+          if (recentActivity) {
+            activeContributors++;
+          }
+        }
+      });
+      
+      // External contributors (exclude owner)
+      externalContributors = contributorStats.filter(c => 
+        c.author && c.author.login && c.author.login.toLowerCase() !== repo.owner.login.toLowerCase()
+      ).length;
+      
+    } else {
+      // Fallback to basic contributor data
+      totalContributors = contributors.length;
+      coreContributors = contributors.filter(c => c.contributions >= 10).length;
+      externalContributors = contributors.filter(c => 
+        c.login && c.login.toLowerCase() !== repo.owner.login.toLowerCase()
+      ).length;
+      activeContributors = Math.floor(totalContributors * 0.3); // Estimate 30% are active
+    }
     
     // Calculate community engagement
     const issueComments = issues.reduce((sum, issue) => sum + (issue.comments || 0), 0);
     const prComments = pullRequests.reduce((sum, pr) => sum + (pr.comments || 0), 0);
     const totalComments = issueComments + prComments;
     
-    // External contributors (not the owner)
-    const externalContributors = contributors.filter(c => 
-      c.login.toLowerCase() !== repo.owner.login.toLowerCase()
-    ).length;
+    // Calculate diversity metrics
+    const contributorDiversity = totalContributors > 1 ? externalContributors / totalContributors : 0;
+    const activityRatio = totalContributors > 0 ? activeContributors / totalContributors : 0;
 
     const metrics = {
-      totalContributors: uniqueContributors,
-      coreContributors,
+      totalContributors,
+      coreContributors: coreContributors || 0,
       externalContributors,
+      activeContributors,
       totalComments,
-      avgCommentsPerIssue: issues.length > 0 ? totalComments / issues.length : 0,
+      totalCommits,
+      contributorDiversity: Math.round(contributorDiversity * 100) / 100,
+      activityRatio: Math.round(activityRatio * 100) / 100,
+      avgCommentsPerIssue: issues.length > 0 ? Math.round(totalComments / issues.length * 100) / 100 : 0,
       hasWiki: repo.has_wiki,
       hasDiscussions: repo.has_discussions
     };
 
-    // Scoring
-    const contributorScore = Math.min(uniqueContributors * 2, 30); // Max 30 points
-    const coreContributorScore = Math.min(coreContributors * 5, 25); // Max 25 points
-    const externalScore = Math.min(externalContributors * 3, 20); // Max 20 points
-    const engagementScore = Math.min(totalComments / 10, 15); // Max 15 points
+    // Improved scoring system
+    const contributorScore = Math.min(Math.log10(totalContributors + 1) * 15, 25); // Logarithmic scale
+    const coreContributorScore = Math.min(coreContributors * 3, 20); // Max 20 points
+    const diversityScore = contributorDiversity * 20; // Max 20 points for 100% external contributors
+    const activityScore = activityRatio * 15; // Max 15 points for 100% active contributors
+    const engagementScore = Math.min(totalComments / 20, 10); // Max 10 points
     
     // Bonus for community features
     let communityFeatures = 0;
@@ -229,7 +279,7 @@ class MetricsCalculator {
     if (repo.has_discussions) communityFeatures += 5;
 
     const score = Math.min(
-      contributorScore + coreContributorScore + externalScore + engagementScore + communityFeatures,
+      contributorScore + coreContributorScore + diversityScore + activityScore + engagementScore + communityFeatures,
       100
     );
 
@@ -239,7 +289,8 @@ class MetricsCalculator {
       breakdown: {
         contributors: Math.round(contributorScore),
         coreContributors: Math.round(coreContributorScore),
-        external: Math.round(externalScore),
+        diversity: Math.round(diversityScore),
+        activity: Math.round(activityScore),
         engagement: Math.round(engagementScore),
         features: communityFeatures
       }

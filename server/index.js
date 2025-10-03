@@ -40,6 +40,7 @@ app.get('/api/analyze/:owner/:repo', async (req, res) => {
     const [
       repoData,
       contributorsData,
+      contributorStatsData,
       issuesData,
       pullRequestsData,
       releasesData,
@@ -48,6 +49,7 @@ app.get('/api/analyze/:owner/:repo', async (req, res) => {
     ] = await Promise.allSettled([
       githubService.getRepositoryInfo(owner, repo),
       githubService.getContributors(owner, repo),
+      githubService.getContributorStats(owner, repo),
       githubService.getIssues(owner, repo),
       githubService.getPullRequests(owner, repo),
       githubService.getReleases(owner, repo),
@@ -59,6 +61,7 @@ app.get('/api/analyze/:owner/:repo', async (req, res) => {
     const results = {
       repository: repoData.status === 'fulfilled' ? repoData.value : null,
       contributors: contributorsData.status === 'fulfilled' ? contributorsData.value : [],
+      contributorStats: contributorStatsData.status === 'fulfilled' ? contributorStatsData.value : [],
       issues: issuesData.status === 'fulfilled' ? issuesData.value : [],
       pullRequests: pullRequestsData.status === 'fulfilled' ? pullRequestsData.value : [],
       releases: releasesData.status === 'fulfilled' ? releasesData.value : [],

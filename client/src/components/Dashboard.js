@@ -272,7 +272,7 @@ const Dashboard = ({ data, onReset, onAddToComparison }) => {
               <span className="font-medium">{metrics.community.metrics.totalContributors}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Core Contributors</span>
+              <span className="text-gray-600">Core Contributors (10+ commits)</span>
               <span className="font-medium">{metrics.community.metrics.coreContributors}</span>
             </div>
             <div className="flex justify-between">
@@ -280,9 +280,23 @@ const Dashboard = ({ data, onReset, onAddToComparison }) => {
               <span className="font-medium">{metrics.community.metrics.externalContributors}</span>
             </div>
             <div className="flex justify-between">
+              <span className="text-gray-600">Active Contributors (6mo)</span>
+              <span className="font-medium">{metrics.community.metrics.activeContributors || 'N/A'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Contributor Diversity</span>
+              <span className="font-medium">{(metrics.community.metrics.contributorDiversity * 100).toFixed(1)}%</span>
+            </div>
+            <div className="flex justify-between">
               <span className="text-gray-600">Total Comments</span>
               <span className="font-medium">{metrics.community.metrics.totalComments}</span>
             </div>
+            {metrics.community.metrics.totalCommits > 0 && (
+              <div className="flex justify-between">
+                <span className="text-gray-600">Total Commits</span>
+                <span className="font-medium">{metrics.community.metrics.totalCommits.toLocaleString()}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
