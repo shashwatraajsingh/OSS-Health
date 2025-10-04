@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
 import { Search, Github } from 'lucide-react';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Badge } from './ui/badge';
 
 const SearchForm = ({ onAnalyze }) => {
   const [repoUrl, setRepoUrl] = useState('');
@@ -30,54 +34,61 @@ const SearchForm = ({ onAnalyze }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="repo-url" className="block text-sm font-medium text-gray-700 mb-2">
-            GitHub Repository URL
-          </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Github className="h-5 w-5 text-gray-400" />
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Github className="h-5 w-5" />
+          Analyze Repository
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <label htmlFor="repo-url" className="text-sm font-medium">
+              GitHub Repository URL
+            </label>
+            <div className="relative">
+              <Github className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="repo-url"
+                type="text"
+                value={repoUrl}
+                onChange={(e) => setRepoUrl(e.target.value)}
+                placeholder="https://github.com/owner/repository"
+                className="pl-10"
+                disabled={isSubmitting}
+              />
             </div>
-            <input
-              id="repo-url"
-              type="text"
-              value={repoUrl}
-              onChange={(e) => setRepoUrl(e.target.value)}
-              placeholder="https://github.com/owner/repository"
-              className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
-              disabled={isSubmitting}
-            />
+          </div>
+
+          <Button
+            type="submit"
+            disabled={!repoUrl.trim() || isSubmitting}
+            className="w-full"
+            size="lg"
+          >
+            <Search className="w-4 h-4 mr-2" />
+            {isSubmitting ? 'Analyzing...' : 'Analyze Repository'}
+          </Button>
+        </form>
+
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground">Try these popular repositories:</p>
+          <div className="flex flex-wrap gap-2">
+            {exampleRepos.map((repo) => (
+              <Badge
+                key={repo}
+                variant="secondary"
+                className="cursor-pointer hover:bg-secondary/80"
+                onClick={() => handleExampleClick(repo)}
+              >
+                {repo}
+              </Badge>
+            ))}
           </div>
         </div>
-
-        <button
-          type="submit"
-          disabled={!repoUrl.trim() || isSubmitting}
-          className="w-full flex items-center justify-center space-x-2 btn-primary disabled:opacity-50 disabled:cursor-not-allowed py-3"
-        >
-          <Search className="w-5 h-5" />
-          <span>{isSubmitting ? 'Analyzing...' : 'Analyze Repository'}</span>
-        </button>
-      </form>
-
-      <div className="mt-6">
-        <p className="text-sm text-gray-600 mb-3">Try these popular repositories:</p>
-        <div className="flex flex-wrap gap-2">
-          {exampleRepos.map((repo) => (
-            <button
-              key={repo}
-              onClick={() => handleExampleClick(repo)}
-              className="inline-flex items-center px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-colors"
-              disabled={isSubmitting}
-            >
-              {repo}
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 

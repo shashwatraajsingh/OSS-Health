@@ -6,7 +6,10 @@ import LoadingSpinner from './components/LoadingSpinner';
 import ErrorMessage from './components/ErrorMessage';
 import TrendingRepos from './components/TrendingRepos';
 import ComparisonView from './components/ComparisonView';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { analyzeRepository } from './services/api';
+import { Star, TrendingUp, Wrench, Shield, Users, BarChart3 } from 'lucide-react';
 import './index.css';
 
 function App() {
@@ -68,7 +71,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <Header 
         currentView={currentView}
         onViewChange={setCurrentView}
@@ -76,125 +79,138 @@ function App() {
       />
       
       <main className="container mx-auto px-4 py-8">
-        {/* Navigation */}
-        <div className="flex justify-center mb-8">
-          <nav className="flex space-x-1 bg-white rounded-lg p-1 shadow-sm border border-gray-200">
-            <button
-              onClick={() => setCurrentView('home')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                currentView === 'home'
-                  ? 'bg-primary-600 text-white'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Home
-            </button>
-            {analysisData && (
-              <button
-                onClick={() => setCurrentView('dashboard')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  currentView === 'dashboard'
-                    ? 'bg-primary-600 text-white'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
+        <Tabs value={currentView} onValueChange={setCurrentView} className="w-full">
+          <div className="flex justify-center mb-8">
+            <TabsList className="grid w-full max-w-md grid-cols-3">
+              <TabsTrigger value="home">Home</TabsTrigger>
+              <TabsTrigger value="dashboard" disabled={!analysisData}>
                 Dashboard
-              </button>
-            )}
-            <button
-              onClick={() => setCurrentView('compare')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                currentView === 'compare'
-                  ? 'bg-primary-600 text-white'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Compare ({comparisonRepos.length})
-            </button>
-          </nav>
-        </div>
-
-        {currentView === 'home' && !loading && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Main Content */}
-            <div className="lg:col-span-2">
-              <div className="text-center mb-8">
-                <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                  OSS Health Dashboard
-                </h1>
-                <p className="text-xl text-gray-600 mb-8">
-                  Analyze open-source projects beyond just GitHub stars. Get comprehensive 
-                  health metrics including popularity, activity, maintenance, security, and community engagement.
-                </p>
-              </div>
-              
-              <SearchForm onAnalyze={handleAnalyze} />
-              
-              {error && <ErrorMessage message={error} onDismiss={() => setError(null)} />}
-              
-              <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="text-center p-6 bg-white rounded-lg shadow-sm">
-                  <div className="text-3xl mb-3">⭐</div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Popularity</h3>
-                  <p className="text-gray-600 text-sm">Stars, forks, downloads from npm/PyPI</p>
-                </div>
-                
-                <div className="text-center p-6 bg-white rounded-lg shadow-sm">
-                  <div className="text-3xl mb-3">📈</div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Activity</h3>
-                  <p className="text-gray-600 text-sm">Commits, PRs, releases, and recency</p>
-                </div>
-                
-                <div className="text-center p-6 bg-white rounded-lg shadow-sm">
-                  <div className="text-3xl mb-3">🛠️</div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Maintenance</h3>
-                  <p className="text-gray-600 text-sm">Issue management and PR handling</p>
-                </div>
-                
-                <div className="text-center p-6 bg-white rounded-lg shadow-sm">
-                  <div className="text-3xl mb-3">🔒</div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Security</h3>
-                  <p className="text-gray-600 text-sm">Advisories, Dependabot, security policies</p>
-                </div>
-                
-                <div className="text-center p-6 bg-white rounded-lg shadow-sm">
-                  <div className="text-3xl mb-3">👥</div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Community</h3>
-                  <p className="text-gray-600 text-sm">Contributors, engagement, discussions</p>
-                </div>
-                
-                <div className="text-center p-6 bg-white rounded-lg shadow-sm">
-                  <div className="text-3xl mb-3">📊</div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Overall Score</h3>
-                  <p className="text-gray-600 text-sm">Weighted composite health rating</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Sidebar */}
-            <div className="lg:col-span-1">
-              <TrendingRepos onSelectRepo={handleSelectTrendingRepo} />
-            </div>
+              </TabsTrigger>
+              <TabsTrigger value="compare">
+                Compare ({comparisonRepos.length})
+              </TabsTrigger>
+            </TabsList>
           </div>
-        )}
 
-        {loading && <LoadingSpinner />}
+          <TabsContent value="home" className="space-y-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Main Content */}
+              <div className="lg:col-span-2 space-y-8">
+                <div className="text-center">
+                  <h1 className="text-4xl font-bold tracking-tight mb-4">
+                    OSS Health Dashboard
+                  </h1>
+                  <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+                    Analyze open-source projects beyond just GitHub stars. Get comprehensive 
+                    health metrics including popularity, activity, maintenance, security, and community engagement.
+                  </p>
+                </div>
+                
+                <SearchForm onAnalyze={handleAnalyze} />
+                
+                {error && <ErrorMessage message={error} onDismiss={() => setError(null)} />}
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <Card className="text-center">
+                    <CardHeader className="pb-2">
+                      <Star className="h-8 w-8 mx-auto text-primary mb-2" />
+                      <CardTitle className="text-lg">Popularity</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription>
+                        Stars, forks, downloads from npm/PyPI
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="text-center">
+                    <CardHeader className="pb-2">
+                      <TrendingUp className="h-8 w-8 mx-auto text-primary mb-2" />
+                      <CardTitle className="text-lg">Activity</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription>
+                        Commits, PRs, releases, and recency
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="text-center">
+                    <CardHeader className="pb-2">
+                      <Wrench className="h-8 w-8 mx-auto text-primary mb-2" />
+                      <CardTitle className="text-lg">Maintenance</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription>
+                        Issue management and PR handling
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="text-center">
+                    <CardHeader className="pb-2">
+                      <Shield className="h-8 w-8 mx-auto text-primary mb-2" />
+                      <CardTitle className="text-lg">Security</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription>
+                        Advisories, Dependabot, security policies
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="text-center">
+                    <CardHeader className="pb-2">
+                      <Users className="h-8 w-8 mx-auto text-primary mb-2" />
+                      <CardTitle className="text-lg">Community</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription>
+                        Contributors, engagement, discussions
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="text-center">
+                    <CardHeader className="pb-2">
+                      <BarChart3 className="h-8 w-8 mx-auto text-primary mb-2" />
+                      <CardTitle className="text-lg">Overall Score</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription>
+                        Weighted composite health rating
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
 
-        {currentView === 'dashboard' && analysisData && (
-          <Dashboard 
-            data={analysisData} 
-            onReset={handleReset}
-            onAddToComparison={handleAddToComparison}
-          />
-        )}
+              {/* Sidebar */}
+              <div className="lg:col-span-1">
+                <TrendingRepos onSelectRepo={handleSelectTrendingRepo} />
+              </div>
+            </div>
+          </TabsContent>
 
-        {currentView === 'compare' && (
-          <ComparisonView
-            repositories={comparisonRepos}
-            onRemove={handleRemoveFromComparison}
-            onAddNew={() => setCurrentView('home')}
-          />
-        )}
+          <TabsContent value="dashboard">
+            {loading && <LoadingSpinner />}
+            {analysisData && (
+              <Dashboard 
+                data={analysisData} 
+                onReset={handleReset}
+                onAddToComparison={handleAddToComparison}
+              />
+            )}
+          </TabsContent>
+
+          <TabsContent value="compare">
+            <ComparisonView
+              repositories={comparisonRepos}
+              onRemove={handleRemoveFromComparison}
+              onAddNew={() => setCurrentView('home')}
+            />
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );

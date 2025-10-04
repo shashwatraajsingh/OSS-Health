@@ -1,43 +1,63 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  body {
-    @apply bg-gray-50 text-gray-900;
+  :root {
+    /* Light mode - using #E7F2EF as background, #19183B as primary */
+    --background: 162 38% 94%; /* #E7F2EF */
+    --foreground: 242 36% 16%; /* #19183B */
+    --card: 0 0% 100%; /* Pure white for cards */
+    --card-foreground: 242 36% 16%; /* #19183B */
+    --popover: 0 0% 100%;
+    --popover-foreground: 242 36% 16%; /* #19183B */
+    --primary: 242 36% 16%; /* #19183B */
+    --primary-foreground: 162 38% 94%; /* #E7F2EF */
+    --secondary: 162 38% 94%; /* #E7F2EF */
+    --secondary-foreground: 242 36% 16%; /* #19183B */
+    --muted: 162 20% 85%; /* Lighter version of #A1C2BD */
+    --muted-foreground: 200 14% 46%; /* #708993 */
+    --accent: 162 25% 76%; /* #A1C2BD */
+    --accent-foreground: 242 36% 16%; /* #19183B */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 162 25% 76%; /* #A1C2BD */
+    --input: 162 25% 76%; /* #A1C2BD */
+    --ring: 242 36% 16%; /* #19183B */
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Dark mode - using #19183B as background, #E7F2EF as foreground */
+    --background: 242 36% 16%; /* #19183B */
+    --foreground: 162 38% 94%; /* #E7F2EF */
+    --card: 242 36% 20%; /* Slightly lighter than background */
+    --card-foreground: 162 38% 94%; /* #E7F2EF */
+    --popover: 242 36% 20%;
+    --popover-foreground: 162 38% 94%; /* #E7F2EF */
+    --primary: 162 25% 76%; /* #A1C2BD */
+    --primary-foreground: 242 36% 16%; /* #19183B */
+    --secondary: 200 14% 46%; /* #708993 */
+    --secondary-foreground: 162 38% 94%; /* #E7F2EF */
+    --muted: 200 14% 30%; /* Darker version of #708993 */
+    --muted-foreground: 162 25% 76%; /* #A1C2BD */
+    --accent: 200 14% 46%; /* #708993 */
+    --accent-foreground: 162 38% 94%; /* #E7F2EF */
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 162 38% 94%; /* #E7F2EF */
+    --border: 200 14% 46%; /* #708993 */
+    --input: 200 14% 46%; /* #708993 */
+    --ring: 162 25% 76%; /* #A1C2BD */
   }
 }
 
-@layer components {
-  .metric-card {
-    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200;
+@layer base {
+  * {
+    @apply border-border;
   }
-  
-  .score-badge {
-    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
-  }
-  
-  .score-excellent {
-    @apply bg-green-100 text-green-800;
-  }
-  
-  .score-good {
-    @apply bg-blue-100 text-blue-800;
-  }
-  
-  .score-fair {
-    @apply bg-yellow-100 text-yellow-800;
-  }
-  
-  .score-poor {
-    @apply bg-red-100 text-red-800;
-  }
-  
-  .btn-primary {
-    @apply bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
-  }
-  
-  .btn-secondary {
-    @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
+  body {
+    @apply bg-background text-foreground;
   }
 }
