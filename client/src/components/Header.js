@@ -49,7 +49,7 @@ const Header = ({ currentView, onViewChange, comparisonCount }) => {
           <div className="flex items-center space-x-2">
             <Button variant="ghost" size="icon" asChild>
               <a
-                href="https://github.com"
+                href="https://github.com/shashwatraajsingh"
                 target="_blank"
                 rel="noopener noreferrer"
               >
